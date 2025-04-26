@@ -3,7 +3,7 @@
 <html lang="en">
 <head><meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>In-class 8</title><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
+<title>H12_320Lab_InferenceS25_Michael_Zhao</title><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
 <style type="text/css">
     pre { line-height: 125%; }
 td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
@@ -7516,7 +7516,22 @@ a.anchor-link {
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h1 id="In-class-exercise-for-Lab-8">In class exercise for Lab 8<a class="anchor-link" href="#In-class-exercise-for-Lab-8">¶</a></h1>
+<style>
+div.blue{
+    background-color:#e6f0ff; 
+    border-radius: 5px; 
+    padding: 20px;}
+</style>
+<style>
+div.warn {    
+    background-color: #fcf2f2;
+    border-color: #dFb5b4;
+    border-left: 5px solid #dfb5b4;
+    padding: 0.5em;
+    }
+ </style>
+<h1 markdown="1" style="text-align: center; color: purple;">Econ 320 Python: Inference t and F test </h1>
+<h2 markdown="1" style="text-align: center; color: purple;">Handout 12 </h2>
 </div>
 </div>
 </div>
@@ -7527,7 +7542,7 @@ a.anchor-link {
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>Michael Zhao</p>
+<p><strong>The package setup</strong></p>
 </div>
 </div>
 </div>
@@ -7536,11 +7551,17 @@ a.anchor-link {
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [35]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [44]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="c1"># import libraries</span>
+<div class="highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">norm</span>
+<span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">t</span>
+<span class="kn">import</span> <span class="nn">scipy.stats</span> <span class="k">as</span> <span class="nn">stats</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span> 
+<span class="kn">import</span> <span class="nn">wooldridge</span> <span class="k">as</span> <span class="nn">woo</span>
 <span class="kn">import</span> <span class="nn">statsmodels.formula.api</span> <span class="k">as</span> <span class="nn">smf</span>
 <span class="kn">from</span> <span class="nn">stargazer.stargazer</span> <span class="kn">import</span> <span class="n">Stargazer</span>
 <span class="kn">from</span> <span class="nn">IPython.core.display</span> <span class="kn">import</span> <span class="n">HTML</span>
@@ -7549,19 +7570,378 @@ a.anchor-link {
 </div>
 </div>
 </div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h2 id="The-t-test">The <em>t</em>-test<a class="anchor-link" href="#The-t-test">¶</a></h2><p>After learning the magnitude and sign of the estimated coefficients in a regression, the next step in empirical research is investigating the statistical significance of these estimates.</p>
+<h3 id="General-Setup">General Setup<a class="anchor-link" href="#General-Setup">¶</a></h3><p>We are often interested in testing whether there is a relation at all between the dependent variable $y$ and a regressor $x_j$ and do not want to impose a sign on the partial effect a <em>priori</em>. 
+So we have the null hypotesis of the form
+$$ H_0: \beta_j = a_j $$ 
+where $a_j$ is some given number, very often $a_j=0$. The standard two-tailed where the alternative hypothesis is 
+$$ H_1: \beta_j \neq a_j $$
+and one- tailed test it is either one of</p>
+$$H_1: \beta_j &lt; a_j  \;\;\;\;  or \;\;\;\;   H_1: \beta_j &gt; a_j$$<p>The hypotheses can be conveniently tested using a t test which is based on the statistic</p>
+$$ t= \frac{\hat{\beta_j} - a_j}{se(\hat{\beta_j})}$$<p>If $H_0$ is in fact true and the CLM assumptions hold, then this statistic has a t distribution with n-k-1 degrees of freedom.</p>
+<p>Since the standard case of a t test,$a_j=0$, is so common R provides us with the relevant t and p values directly in the <strong>summary</strong> of the estimation results.</p>
+<p>In other words the formula is: 
+$$ t= \frac{estimate - hypothesized \; value }{standard \; error}$$</p>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h3 id="t-test-in-the-regression-results">t-test in the regression results<a class="anchor-link" href="#t-test-in-the-regression-results">¶</a></h3><p>the summary of the <code>smf.ols()</code> or the stargazer table both provide with inference analysis and they both contained the same information it is just display differently.</p>
+<p><code>.summary()</code> Provides a table that has four relevant columns related to the coefficients</p>
+<table>
+<thead>
+<tr>
+<th>Indep variables</th>
+<th>Estimate</th>
+<th>Std. Error</th>
+<th>t-stat value</th>
+<th>**$Pr(&gt;</th>
+<th>t</th>
+<th>)$**</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Var names</td>
+<td>Estimated ($\beta's$)</td>
+<td>($\beta's$) standard errors</td>
+<td>$(\hat\beta - 0) / se$</td>
+<td>p-value for $\beta$</td>
+<td>Confidence intervals at 95%</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [41]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [45]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Load the attitude dataset given in the question</span>
-<span class="n">attitude</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">'attitude.csv'</span><span class="p">)</span>
-<span class="c1"># This is a summary table</span>
-<span class="n">summary</span><span class="o">=</span> <span class="n">attitude</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span>
-<span class="n">display</span><span class="p">(</span><span class="n">summary</span><span class="p">)</span>
+<div class="highlight hl-ipython3"><pre><span></span><span class="n">gpa1</span> <span class="o">=</span> <span class="n">woo</span><span class="o">.</span><span class="n">dataWoo</span><span class="p">(</span><span class="s1">'gpa1'</span><span class="p">)</span>
+
+<span class="c1"># store results:</span>
+<span class="n">reg</span> <span class="o">=</span> <span class="n">smf</span><span class="o">.</span><span class="n">ols</span><span class="p">(</span><span class="n">formula</span><span class="o">=</span><span class="s1">'colGPA ~ hsGPA + ACT + skipped'</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">gpa1</span><span class="p">)</span>
+<span class="n">results</span> <span class="o">=</span> <span class="n">reg</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+<span class="c1"># display summary results </span>
+<span class="nb">print</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">summary</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>                            OLS Regression Results                            
+==============================================================================
+Dep. Variable:                 colGPA   R-squared:                       0.234
+Model:                            OLS   Adj. R-squared:                  0.217
+Method:                 Least Squares   F-statistic:                     13.92
+Date:                Fri, 11 Apr 2025   Prob (F-statistic):           5.65e-08
+Time:                        10:52:34   Log-Likelihood:                -41.501
+No. Observations:                 141   AIC:                             91.00
+Df Residuals:                     137   BIC:                             102.8
+Df Model:                           3                                         
+Covariance Type:            nonrobust                                         
+==============================================================================
+                 coef    std err          t      P&gt;|t|      [0.025      0.975]
+------------------------------------------------------------------------------
+Intercept      1.3896      0.332      4.191      0.000       0.734       2.045
+hsGPA          0.4118      0.094      4.396      0.000       0.227       0.597
+ACT            0.0147      0.011      1.393      0.166      -0.006       0.036
+skipped       -0.0831      0.026     -3.197      0.002      -0.135      -0.032
+==============================================================================
+Omnibus:                        1.917   Durbin-Watson:                   1.881
+Prob(Omnibus):                  0.383   Jarque-Bera (JB):                1.636
+Skew:                           0.125   Prob(JB):                        0.441
+Kurtosis:                       2.535   Cond. No.                         300.
+==============================================================================
+
+Notes:
+[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p><code>stargazer(model)</code> Provides a table with one column per model</p>
+<table>
+<thead>
+<tr>
+<th>Independent variables</th>
+<th>Estimate</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Variable name</td>
+<td>Estimated ($\beta's$) with stars the imply statistical significance at certain $\alpha$</td>
+</tr>
+<tr>
+<td></td>
+<td>(standard errors in parenthesis)</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [46]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Let's see the regression results in the stargazer table why are the stars there? what do they show? </span>
+<span class="n">stargazer</span> <span class="o">=</span> <span class="n">Stargazer</span><span class="p">([</span><span class="n">results</span><span class="p">])</span>
+<span class="c1"># organize covariates and put intercept at the bottom</span>
+<span class="n">stargazer</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">'Regression Results'</span><span class="p">)</span>
+<span class="n">stargazer</span><span class="o">.</span><span class="n">covariate_order</span><span class="p">([</span><span class="s1">'hsGPA'</span><span class="p">,</span> <span class="s1">'ACT'</span><span class="p">,</span> <span class="s1">'skipped'</span><span class="p">])</span>
+<span class="n">HTML</span><span class="p">(</span><span class="n">stargazer</span><span class="o">.</span><span class="n">render_html</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child jp-OutputArea-executeResult">
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[46]:</div>
+<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
+Regression Results<br/><table style="text-align:center"><tr><td colspan="2" style="border-bottom: 1px solid black"></td></tr>
+<tr><td style="text-align:left"></td><td colspan="1"><em>Dependent variable: colGPA</em></td></tr><tr><td style="text-align:left"></td><tr><td style="text-align:left"></td><td>(1)</td></tr>
+<tr><td colspan="2" style="border-bottom: 1px solid black"></td></tr>
+<tr><td style="text-align:left">hsGPA</td><td>0.412<sup>***</sup></td></tr>
+<tr><td style="text-align:left"></td><td>(0.094)</td></tr>
+<tr><td style="text-align:left">ACT</td><td>0.015<sup></sup></td></tr>
+<tr><td style="text-align:left"></td><td>(0.011)</td></tr>
+<tr><td style="text-align:left">skipped</td><td>-0.083<sup>***</sup></td></tr>
+<tr><td style="text-align:left"></td><td>(0.026)</td></tr>
+<td colspan="2" style="border-bottom: 1px solid black"></td></tr>
+<tr><td style="text-align: left">Observations</td><td>141</td></tr><tr><td style="text-align: left">R<sup>2</sup></td><td>0.234</td></tr><tr><td style="text-align: left">Adjusted R<sup>2</sup></td><td>0.217</td></tr><tr><td style="text-align: left">Residual Std. Error</td><td>0.329 (df=137)</td></tr><tr><td style="text-align: left">F Statistic</td><td>13.919<sup>***</sup> (df=3; 137)</td></tr>
+<tr><td colspan="2" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align: left">Note:</td><td colspan="1" style="text-align: right"><sup>*</sup>p&lt;0.1; <sup>**</sup>p&lt;0.05; <sup>***</sup>p&lt;0.01</td></tr></table>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p>Let's see an example from Wooldridge Chapter 4. Using gpa1 data</p>
+<h3 id="t-test-step-by-step">t-test step-by-step<a class="anchor-link" href="#t-test-step-by-step">¶</a></h3><p>You rarely use this method, but it is crucial to understand how these number are calculated to know how to read the regression results from the summary table as those caluclations are done there. See both and compare this with the resgression summary table.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [47]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-ipython3"><pre><span></span><span class="c1"># manually confirm the formulas, i.e. extract coefficients and SE:</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">params</span>
+<span class="n">se</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">bse</span>
+
+<span class="n">obsd</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">nobs</span>
+<span class="c1"># reproduce t statistic:</span>
+<span class="n">tstat</span> <span class="o">=</span> <span class="n">b</span><span class="o">/</span><span class="n">se</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'tstat: </span><span class="se">\n</span><span class="si">{</span><span class="n">tstat</span><span class="si">}</span><span class="se">\n</span><span class="s1">'</span><span class="p">)</span>
+
+
+<span class="c1"># reproduce p value: multiply by two because this is a two tail test. </span>
+
+<span class="n">pval</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">stats</span><span class="o">.</span><span class="n">t</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="o">-</span><span class="nb">abs</span><span class="p">(</span><span class="n">tstat</span><span class="p">),</span> <span class="n">obsd</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="n">b</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+<span class="c1"># use the np.around() function to round array </span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'pval vector: </span><span class="se">\n</span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">around</span><span class="p">(</span><span class="n">pval</span><span class="p">,</span><span class="mi">4</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s1">'</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>tstat: 
+Intercept    4.191039
+hsGPA        4.396260
+ACT          1.393319
+skipped     -3.196840
+dtype: float64
+
+pval vector: 
+Intercept    0.0000
+hsGPA        0.0000
+ACT          0.1657
+skipped      0.0017
+dtype: float64
+
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<font color="blue">
+    The results above, both from the step-by-step method and doing the `summary()`, are equal and provide the same information. Remember that a $|t|&gt;2$ is the rule of thumb to reject the null hypothesis.
+<p>From our calculation above, the critical value for $\alpha =0.05$ was 1.97. The t-stats for High School GPA and skipped are bigger than this number. Showing the $$ H_0: \beta_j = 0 $$ is rejected in favor of $$ H_a: \beta_j \neq a_j $$</p>
+<p>p-values are also close to zero, informing us about the level of significance of our variables. High School GPA for example is significant at 1%</p>
+</font>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h2 id="Confindence-Intervals">Confindence Intervals<a class="anchor-link" href="#Confindence-Intervals">¶</a></h2><p>Confindence intervals for regression coefficients are related to the t test. The 95% confidence inteval for parameter $\hat{\beta_j}\pm c \cdot se(\hat{\beta_j})$ 
+where $c$ is the same critical value for the two sided t test using a significance level $\alpha=5\%$</p>
+<p>In Python you can calculate CI for all coefficients: 
+Store the regressions results in an <em>object</em> and then use the method <strong>.conf_int()</strong> to obtain a table of 95% confidence intervals.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p>You can use the option alpha=value to choose other levels. For example use  <strong><code>results.conf_int(alpha=0.01, cols=None)</code></strong> to find a 99% confidence interval.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [48]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-ipython3"><pre><span></span><span class="c1"># 95% CI:</span>
+<span class="c1">#default alpha is 0.05, no need to specify</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">'95% CI:'</span><span class="p">,</span><span class="n">results</span><span class="o">.</span><span class="n">conf_int</span><span class="p">())</span>
+<span class="c1"># 99% CI:</span>
+<span class="c1"># add word alpha to the function to specify the confidence level</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">'99% CI:'</span><span class="p">,</span> <span class="n">results</span><span class="o">.</span><span class="n">conf_int</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span><span class="n">cols</span> <span class="o">=</span> <span class="kc">None</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>95% CI:                   0         1
+Intercept  0.733930  2.045178
+hsGPA      0.226582  0.597050
+ACT       -0.006171  0.035612
+skipped   -0.134523 -0.031703
+99% CI:                   0         1
+Intercept  0.523472  2.255635
+hsGPA      0.167121  0.656511
+ACT       -0.012877  0.042318
+skipped   -0.151026 -0.015200
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h2 id="Linear-restrictions:-The-F-test">Linear restrictions: The <em>F</em> test<a class="anchor-link" href="#Linear-restrictions:-The-F-test">¶</a></h2><p>This test allows you to test the significance of various parameters at the same time. The test statistic of the <code>F</code> test is based on the relative difference between the sum of squared residuals in the general (unrestricted) model and a restricted model in which the hypoteses are imposed $SSR_{ur}$ and $SSR_{r}$, respectively. 
+$$F={{\frac{SSR_{r}-SSR_{ur}}{SSR_{ur}}}\cdot{\frac{n-k-1}{q}}}= {{\frac{R^2_{ur}-R^2_{r}}{1-R^2_{ur}}}\cdot{\frac{n-k-1}{q}}}$$</p>
+<p>where q is the number of restrictions, n the number of observations and k the number of parameters in the regression.</p>
+<p>Let's play with this regression, from Wooldridge Chapter 4.<br>
+$$log(salary)=\beta_0 + \beta1\cdot years + \beta_2 \cdot gamesyr + \beta_3 \cdot bavg + \beta_4 \cdot hrunsyr +\beta_5 \cdot rbisyr +u$$</br></p>
+<h3 id="F-test-using-f_test">F test using <code>f_test</code><a class="anchor-link" href="#F-test-using-f_test">¶</a></h3><p>Python provides a more convenient way do this, but is always best to understand what is behind those magical functions.  The module <code>statsmodels</code> provides the command <strong><code>f-test</code></strong> that allows you to perfom this kind of test. Once you have estimated your regression and store your results in an object, for our example named <strong>results</strong>, use</p>
+<blockquote>
+<p>`hypothesis = ["var_name1 = 0", "var_name2 = 0", ...]</p>
+</blockquote>
+<blockquote>
+<p>ftest = results.f_test(hypothesis)`</p>
+</blockquote>
+<p>where <strong><code>hypothesis</code></strong> represents the null hypothesis to be tested. It is a list of length q where each restriction is described as text in which the variable name takes the place of its parameter.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [49]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-ipython3"><pre><span></span><span class="n">mlb1</span> <span class="o">=</span> <span class="n">woo</span><span class="o">.</span><span class="n">dataWoo</span><span class="p">(</span><span class="s1">'mlb1'</span><span class="p">)</span>
+<span class="c1"># OLS regression:</span>
+<span class="n">reg</span> <span class="o">=</span> <span class="n">smf</span><span class="o">.</span><span class="n">ols</span><span class="p">(</span><span class="n">formula</span><span class="o">=</span><span class="s1">'lsalary ~ years + gamesyr + bavg + hrunsyr + rbisyr'</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">mlb1</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+<span class="c1"># display summary results</span>
+<span class="n">display</span><span class="p">(</span><span class="n">reg</span><span class="o">.</span><span class="n">summary</span><span class="p">())</span>
 </pre></div>
 </div>
 </div>
@@ -7574,117 +7954,339 @@ a.anchor-link {
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output" data-mime-type="text/html" tabindex="0">
-<div>
-<style scoped="">
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-<thead>
-<tr style="text-align: right;">
-<th></th>
-<th>rating</th>
-<th>complaints</th>
-<th>privileges</th>
-<th>learning</th>
-<th>raises</th>
-<th>critical</th>
-<th>advance</th>
-</tr>
-</thead>
-<tbody>
+<table class="simpletable">
+<caption>OLS Regression Results</caption>
 <tr>
-<th>count</th>
-<td>30.000000</td>
-<td>30.000000</td>
-<td>30.000000</td>
-<td>30.000000</td>
-<td>30.000000</td>
-<td>30.000000</td>
-<td>30.000000</td>
+<th>Dep. Variable:</th> <td>lsalary</td> <th>  R-squared:         </th> <td>   0.628</td>
 </tr>
 <tr>
-<th>mean</th>
-<td>64.633333</td>
-<td>66.600000</td>
-<td>53.133333</td>
-<td>56.366667</td>
-<td>64.633333</td>
-<td>74.766667</td>
-<td>42.933333</td>
+<th>Model:</th> <td>OLS</td> <th>  Adj. R-squared:    </th> <td>   0.622</td>
 </tr>
 <tr>
-<th>std</th>
-<td>12.172562</td>
-<td>13.314757</td>
-<td>12.235430</td>
-<td>11.737013</td>
-<td>10.397226</td>
-<td>9.894908</td>
-<td>10.288706</td>
+<th>Method:</th> <td>Least Squares</td> <th>  F-statistic:       </th> <td>   117.1</td>
 </tr>
 <tr>
-<th>min</th>
-<td>40.000000</td>
-<td>37.000000</td>
-<td>30.000000</td>
-<td>34.000000</td>
-<td>43.000000</td>
-<td>49.000000</td>
-<td>25.000000</td>
+<th>Date:</th> <td>Fri, 11 Apr 2025</td> <th>  Prob (F-statistic):</th> <td>2.94e-72</td>
 </tr>
 <tr>
-<th>25%</th>
-<td>58.750000</td>
-<td>58.500000</td>
-<td>45.000000</td>
-<td>47.000000</td>
-<td>58.250000</td>
-<td>69.250000</td>
-<td>35.000000</td>
+<th>Time:</th> <td>10:52:34</td> <th>  Log-Likelihood:    </th> <td> -385.11</td>
 </tr>
 <tr>
-<th>50%</th>
-<td>65.500000</td>
-<td>65.000000</td>
-<td>51.500000</td>
-<td>56.500000</td>
-<td>63.500000</td>
-<td>77.500000</td>
-<td>41.000000</td>
+<th>No. Observations:</th> <td>   353</td> <th>  AIC:               </th> <td>   782.2</td>
 </tr>
 <tr>
-<th>75%</th>
-<td>71.750000</td>
-<td>77.000000</td>
-<td>62.500000</td>
-<td>66.750000</td>
-<td>71.000000</td>
-<td>80.000000</td>
-<td>47.750000</td>
+<th>Df Residuals:</th> <td>   347</td> <th>  BIC:               </th> <td>   805.4</td>
 </tr>
 <tr>
-<th>max</th>
-<td>85.000000</td>
-<td>90.000000</td>
-<td>83.000000</td>
-<td>75.000000</td>
-<td>88.000000</td>
-<td>92.000000</td>
-<td>72.000000</td>
+<th>Df Model:</th> <td>     5</td> <th> </th> <td> </td>
 </tr>
-</tbody>
+<tr>
+<th>Covariance Type:</th> <td>nonrobust</td> <th> </th> <td> </td>
+</tr>
 </table>
+<table class="simpletable">
+<tr>
+<td></td> <th>coef</th> <th>std err</th> <th>t</th> <th>P&gt;|t|</th> <th>[0.025</th> <th>0.975]</th>
+</tr>
+<tr>
+<th>Intercept</th> <td>   11.1924</td> <td>    0.289</td> <td>   38.752</td> <td> 0.000</td> <td>   10.624</td> <td>   11.760</td>
+</tr>
+<tr>
+<th>years</th> <td>    0.0689</td> <td>    0.012</td> <td>    5.684</td> <td> 0.000</td> <td>    0.045</td> <td>    0.093</td>
+</tr>
+<tr>
+<th>gamesyr</th> <td>    0.0126</td> <td>    0.003</td> <td>    4.742</td> <td> 0.000</td> <td>    0.007</td> <td>    0.018</td>
+</tr>
+<tr>
+<th>bavg</th> <td>    0.0010</td> <td>    0.001</td> <td>    0.887</td> <td> 0.376</td> <td>   -0.001</td> <td>    0.003</td>
+</tr>
+<tr>
+<th>hrunsyr</th> <td>    0.0144</td> <td>    0.016</td> <td>    0.899</td> <td> 0.369</td> <td>   -0.017</td> <td>    0.046</td>
+</tr>
+<tr>
+<th>rbisyr</th> <td>    0.0108</td> <td>    0.007</td> <td>    1.500</td> <td> 0.134</td> <td>   -0.003</td> <td>    0.025</td>
+</tr>
+</table>
+<table class="simpletable">
+<tr>
+<th>Omnibus:</th> <td> 6.816</td> <th>  Durbin-Watson:     </th> <td>   1.265</td>
+</tr>
+<tr>
+<th>Prob(Omnibus):</th> <td> 0.033</td> <th>  Jarque-Bera (JB):  </th> <td>  10.197</td>
+</tr>
+<tr>
+<th>Skew:</th> <td>-0.068</td> <th>  Prob(JB):          </th> <td> 0.00610</td>
+</tr>
+<tr>
+<th>Kurtosis:</th> <td> 3.821</td> <th>  Cond. No.          </th> <td>2.09e+03</td>
+</tr>
+</table><br/><br/>Notes:<br/>[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.<br/>[2] The condition number is large, 2.09e+03. This might indicate that there are<br/>strong multicollinearity or other numerical problems.
 </div>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [50]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-ipython3"><pre><span></span><span class="c1"># automated F test:</span>
+<span class="c1"># first we need to define the null hypothesis </span>
+<span class="c1"># with the coefficients we want to test for the joint significance</span>
+<span class="c1"># in this case we want to test if bavg, hrunsyr, and rbisyr are equal to zero. </span>
+<span class="c1"># meaning ability related to performance, is not relevant for the salary.</span>
+<span class="n">hypothesis</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'bavg = 0'</span><span class="p">,</span> <span class="s1">'hrunsyr = 0'</span><span class="p">,</span> <span class="s1">'rbisyr = 0'</span><span class="p">]</span>
+<span class="n">ftest</span> <span class="o">=</span> <span class="n">reg</span><span class="o">.</span><span class="n">f_test</span><span class="p">(</span><span class="n">hypothesis</span><span class="p">)</span>
+<span class="n">fstat</span> <span class="o">=</span> <span class="n">ftest</span><span class="o">.</span><span class="n">statistic</span>
+<span class="n">fpval</span> <span class="o">=</span> <span class="n">ftest</span><span class="o">.</span><span class="n">pvalue</span>
+<span class="c1"># Beacuse fstat comes form an array we need .around() to round it. </span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Fstat: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">around</span><span class="p">(</span><span class="n">fstat</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s1">'</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Fpval: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">around</span><span class="p">(</span><span class="n">fpval</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s1">'</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>Fstat: 9.55
+
+Fpval: 0.0
+
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [51]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-ipython3"><pre><span></span><span class="o">!</span>jupyter<span class="w"> </span>nbconvert<span class="w"> </span>--to<span class="w"> </span>html<span class="w"> </span>H12_320Lab_InferenceS25.ipynb
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>This application is used to convert notebook files (*.ipynb)
+        to various other formats.
+
+        WARNING: THE COMMANDLINE INTERFACE MAY CHANGE IN FUTURE RELEASES.
+
+Options
+=======
+The options below are convenience aliases to configurable class-options,
+as listed in the "Equivalent to" description-line of the aliases.
+To see all configurable class-options for some &lt;cmd&gt;, use:
+    &lt;cmd&gt; --help-all
+
+--debug
+    set log level to logging.DEBUG (maximize logging output)
+    Equivalent to: [--Application.log_level=10]
+--show-config
+    Show the application's configuration (human-readable format)
+    Equivalent to: [--Application.show_config=True]
+--show-config-json
+    Show the application's configuration (json format)
+    Equivalent to: [--Application.show_config_json=True]
+--generate-config
+    generate default config file
+    Equivalent to: [--JupyterApp.generate_config=True]
+-y
+    Answer yes to any questions instead of prompting.
+    Equivalent to: [--JupyterApp.answer_yes=True]
+--execute
+    Execute the notebook prior to export.
+    Equivalent to: [--ExecutePreprocessor.enabled=True]
+--allow-errors
+    Continue notebook execution even if one of the cells throws an error and include the error message in the cell output (the default behaviour is to abort conversion). This flag is only relevant if '--execute' was specified, too.
+    Equivalent to: [--ExecutePreprocessor.allow_errors=True]
+--stdin
+    read a single notebook file from stdin. Write the resulting notebook with default basename 'notebook.*'
+    Equivalent to: [--NbConvertApp.from_stdin=True]
+--stdout
+    Write notebook output to stdout instead of files.
+    Equivalent to: [--NbConvertApp.writer_class=StdoutWriter]
+--inplace
+    Run nbconvert in place, overwriting the existing notebook (only
+            relevant when converting to notebook format)
+    Equivalent to: [--NbConvertApp.use_output_suffix=False --NbConvertApp.export_format=notebook --FilesWriter.build_directory=]
+--clear-output
+    Clear output of current file and save in place,
+            overwriting the existing notebook.
+    Equivalent to: [--NbConvertApp.use_output_suffix=False --NbConvertApp.export_format=notebook --FilesWriter.build_directory= --ClearOutputPreprocessor.enabled=True]
+--coalesce-streams
+    Coalesce consecutive stdout and stderr outputs into one stream (within each cell).
+    Equivalent to: [--NbConvertApp.use_output_suffix=False --NbConvertApp.export_format=notebook --FilesWriter.build_directory= --CoalesceStreamsPreprocessor.enabled=True]
+--no-prompt
+    Exclude input and output prompts from converted document.
+    Equivalent to: [--TemplateExporter.exclude_input_prompt=True --TemplateExporter.exclude_output_prompt=True]
+--no-input
+    Exclude input cells and output prompts from converted document.
+            This mode is ideal for generating code-free reports.
+    Equivalent to: [--TemplateExporter.exclude_output_prompt=True --TemplateExporter.exclude_input=True --TemplateExporter.exclude_input_prompt=True]
+--allow-chromium-download
+    Whether to allow downloading chromium if no suitable version is found on the system.
+    Equivalent to: [--WebPDFExporter.allow_chromium_download=True]
+--disable-chromium-sandbox
+    Disable chromium security sandbox when converting to PDF..
+    Equivalent to: [--WebPDFExporter.disable_sandbox=True]
+--show-input
+    Shows code input. This flag is only useful for dejavu users.
+    Equivalent to: [--TemplateExporter.exclude_input=False]
+--embed-images
+    Embed the images as base64 dataurls in the output. This flag is only useful for the HTML/WebPDF/Slides exports.
+    Equivalent to: [--HTMLExporter.embed_images=True]
+--sanitize-html
+    Whether the HTML in Markdown cells and cell outputs should be sanitized..
+    Equivalent to: [--HTMLExporter.sanitize_html=True]
+--log-level=&lt;Enum&gt;
+    Set the log level by value or name.
+    Choices: any of [0, 10, 20, 30, 40, 50, 'DEBUG', 'INFO', 'WARN', 'ERROR', 'CRITICAL']
+    Default: 30
+    Equivalent to: [--Application.log_level]
+--config=&lt;Unicode&gt;
+    Full path of a config file.
+    Default: ''
+    Equivalent to: [--JupyterApp.config_file]
+--to=&lt;Unicode&gt;
+    The export format to be used, either one of the built-in formats
+            ['asciidoc', 'custom', 'html', 'latex', 'markdown', 'notebook', 'pdf', 'python', 'qtpdf', 'qtpng', 'rst', 'script', 'slides', 'webpdf']
+            or a dotted object name that represents the import path for an
+            ``Exporter`` class
+    Default: ''
+    Equivalent to: [--NbConvertApp.export_format]
+--template=&lt;Unicode&gt;
+    Name of the template to use
+    Default: ''
+    Equivalent to: [--TemplateExporter.template_name]
+--template-file=&lt;Unicode&gt;
+    Name of the template file to use
+    Default: None
+    Equivalent to: [--TemplateExporter.template_file]
+--theme=&lt;Unicode&gt;
+    Template specific theme(e.g. the name of a JupyterLab CSS theme distributed
+    as prebuilt extension for the lab template)
+    Default: 'light'
+    Equivalent to: [--HTMLExporter.theme]
+--sanitize_html=&lt;Bool&gt;
+    Whether the HTML in Markdown cells and cell outputs should be sanitized.This
+    should be set to True by nbviewer or similar tools.
+    Default: False
+    Equivalent to: [--HTMLExporter.sanitize_html]
+--writer=&lt;DottedObjectName&gt;
+    Writer class used to write the
+                                        results of the conversion
+    Default: 'FilesWriter'
+    Equivalent to: [--NbConvertApp.writer_class]
+--post=&lt;DottedOrNone&gt;
+    PostProcessor class used to write the
+                                        results of the conversion
+    Default: ''
+    Equivalent to: [--NbConvertApp.postprocessor_class]
+--output=&lt;Unicode&gt;
+    Overwrite base name use for output files.
+                Supports pattern replacements '{notebook_name}'.
+    Default: '{notebook_name}'
+    Equivalent to: [--NbConvertApp.output_base]
+--output-dir=&lt;Unicode&gt;
+    Directory to write output(s) to. Defaults
+                                  to output to the directory of each notebook. To recover
+                                  previous default behaviour (outputting to the current
+                                  working directory) use . as the flag value.
+    Default: ''
+    Equivalent to: [--FilesWriter.build_directory]
+--reveal-prefix=&lt;Unicode&gt;
+    The URL prefix for reveal.js (version 3.x).
+            This defaults to the reveal CDN, but can be any url pointing to a copy
+            of reveal.js.
+            For speaker notes to work, this must be a relative path to a local
+            copy of reveal.js: e.g., "reveal.js".
+            If a relative path is given, it must be a subdirectory of the
+            current directory (from which the server is run).
+            See the usage documentation
+            (https://nbconvert.readthedocs.io/en/latest/usage.html#reveal-js-html-slideshow)
+            for more details.
+    Default: ''
+    Equivalent to: [--SlidesExporter.reveal_url_prefix]
+--nbformat=&lt;Enum&gt;
+    The nbformat version to write.
+            Use this to downgrade notebooks.
+    Choices: any of [1, 2, 3, 4]
+    Default: 4
+    Equivalent to: [--NotebookExporter.nbformat_version]
+
+Examples
+--------
+
+    The simplest way to use nbconvert is
+
+            &gt; jupyter nbconvert mynotebook.ipynb --to html
+
+            Options include ['asciidoc', 'custom', 'html', 'latex', 'markdown', 'notebook', 'pdf', 'python', 'qtpdf', 'qtpng', 'rst', 'script', 'slides', 'webpdf'].
+
+            &gt; jupyter nbconvert --to latex mynotebook.ipynb
+
+            Both HTML and LaTeX support multiple output templates. LaTeX includes
+            'base', 'article' and 'report'.  HTML includes 'basic', 'lab' and
+            'classic'. You can specify the flavor of the format used.
+
+            &gt; jupyter nbconvert --to html --template lab mynotebook.ipynb
+
+            You can also pipe the output to stdout, rather than a file
+
+            &gt; jupyter nbconvert mynotebook.ipynb --stdout
+
+            PDF is generated via latex
+
+            &gt; jupyter nbconvert mynotebook.ipynb --to pdf
+
+            You can get (and serve) a Reveal.js-powered slideshow
+
+            &gt; jupyter nbconvert myslides.ipynb --to slides --post serve
+
+            Multiple notebooks can be given at the command line in a couple of
+            different ways:
+
+            &gt; jupyter nbconvert notebook*.ipynb
+            &gt; jupyter nbconvert notebook1.ipynb notebook2.ipynb
+
+            or you can specify the notebooks list in a config file, containing::
+
+                c.NbConvertApp.notebooks = ["my_notebook.ipynb"]
+
+            &gt; jupyter nbconvert --config mycfg.py
+
+To see all available configurables, use `--help-all`.
+
+</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
+<pre>[NbConvertApp] WARNING | pattern 'H12_320Lab_InferenceS25.ipynb' matched no files
+</pre>
 </div>
 </div>
 </div>
@@ -7696,107 +8298,14 @@ a.anchor-link {
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>$$ Rating = \beta_0 + \beta_1*Complaints + \beta_2*Privileges + \beta_3*Learning + \beta_4*Raises +          \beta_5*Critical$$</p>
-<p>$$ 
-   Rating = \beta_0 + \beta_1 \cdot Complaints + \beta_2 \cdot Privileges + \beta_3 \cdot Learning 
-   $$</p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [37]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Run regression based on the 2 formulas given</span>
-<span class="n">linear_1</span> <span class="o">=</span> <span class="n">smf</span><span class="o">.</span><span class="n">ols</span><span class="p">(</span><span class="s1">'rating ~ complaints + privileges + learning + raises + critical'</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">attitude</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
-<span class="n">linear_2</span> <span class="o">=</span> <span class="n">smf</span><span class="o">.</span><span class="n">ols</span><span class="p">(</span><span class="s1">'rating ~ complaints + privileges + learning'</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">attitude</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [40]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Combining the results and try all the commands</span>
-<span class="n">stargazer</span> <span class="o">=</span> <span class="n">Stargazer</span><span class="p">([</span><span class="n">linear_1</span><span class="p">,</span> <span class="n">linear_2</span><span class="p">])</span>
-<span class="n">stargazer</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">"Attitude Regressions ;)"</span><span class="p">)</span>
-<span class="n">stargazer</span><span class="o">.</span><span class="n">show_header</span> <span class="o">=</span> <span class="kc">True</span>
-<span class="n">stargazer</span><span class="o">.</span><span class="n">show_model_numbers</span> <span class="o">=</span> <span class="kc">True</span>
-<span class="n">stargazer</span><span class="o">.</span><span class="n">custom_columns</span><span class="p">([</span><span class="s1">'Linear 1: Rating = B0 + B1 * Complaints + B2 * Privileges + B3 * Learning + B4 * Raises + B5 * Critical'</span><span class="p">,</span> <span class="s1">'Linear 2: Rating = B0+ B1 * Complaints + B2 * Privileges + B3 * Learning'</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
-<span class="n">stargazer</span><span class="o">.</span><span class="n">significance_levels</span><span class="p">([</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">])</span>
-<span class="n">stargazer</span><span class="o">.</span><span class="n">significant_digits</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
-<span class="n">stargazer</span><span class="o">.</span><span class="n">show_confidence_intervals</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">stargazer</span><span class="o">.</span><span class="n">dependent_variable_name</span><span class="p">(</span><span class="s2">"Rating Score"</span><span class="p">)</span>
-<span class="n">stargazer</span><span class="o">.</span><span class="n">rename_covariates</span><span class="p">({</span>
-    <span class="s2">"Intercept"</span><span class="p">:</span> <span class="s2">"intercept"</span><span class="p">,</span>
-    <span class="s2">"complaints"</span><span class="p">:</span> <span class="s2">"complaint"</span><span class="p">,</span>
-    <span class="s2">"privileges"</span><span class="p">:</span> <span class="s2">"privilege"</span><span class="p">,</span>
-    <span class="s2">"learning"</span><span class="p">:</span> <span class="s2">"learning"</span><span class="p">,</span>
-    <span class="s2">"raises"</span><span class="p">:</span> <span class="s2">"raise"</span><span class="p">,</span>
-    <span class="s2">"critical"</span><span class="p">:</span> <span class="s2">"critical"</span>
-<span class="p">})</span>
-<span class="n">stargazer</span><span class="o">.</span><span class="n">covariate_order</span><span class="p">([</span><span class="s2">"critical"</span><span class="p">,</span> <span class="s2">"complaints"</span><span class="p">,</span> <span class="s2">"privileges"</span><span class="p">,</span> <span class="s2">"learning"</span><span class="p">,</span> <span class="s2">"raises"</span><span class="p">,</span> <span class="s2">"Intercept"</span><span class="p">])</span>
-<span class="n">stargazer</span><span class="o">.</span><span class="n">reset_covariate_order</span><span class="p">()</span>
-<span class="n">stargazer</span><span class="o">.</span><span class="n">show_degrees_of_freedom</span> <span class="o">=</span> <span class="kc">True</span>
-<span class="n">stargazer</span><span class="o">.</span><span class="n">custom_note_label</span><span class="p">(</span><span class="s2">"This command is fun!"</span><span class="p">)</span>
-<span class="n">stargazer</span><span class="o">.</span><span class="n">add_custom_notes</span><span class="p">([</span><span class="s2">"My name is michael"</span><span class="p">,</span> <span class="s2">"I love pizza"</span><span class="p">])</span>
-<span class="n">stargazer</span><span class="o">.</span><span class="n">append_notes</span> <span class="o">=</span> <span class="kc">True</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [39]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Render the HTML table</span>
-<span class="n">HTML</span><span class="p">(</span><span class="n">stargazer</span><span class="o">.</span><span class="n">render_html</span><span class="p">())</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[39]:</div>
-<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
-Attitude Regressions ;)<br/><table style="text-align:center"><tr><td colspan="3" style="border-bottom: 1px solid black"></td></tr>
-<tr><td style="text-align:left"></td><td colspan="2"><em>Dependent variable: Rating Score</em></td></tr><tr><td style="text-align:left"></td><tr><td></td><td colspan="1">Linear 1: Rating = B0 + B1 * Complaints + B2 * Privileges + B3 * Learning + B4 * Raises + B5 * Critical</td><td colspan="1">Linear 2: Rating = B0+ B1 * Complaints + B2 * Privileges + B3 * Learning</td></tr><tr><td style="text-align:left"></td><td>(1)</td><td>(2)</td></tr>
-<tr><td colspan="3" style="border-bottom: 1px solid black"></td></tr>
-<tr><td style="text-align:left">intercept</td><td>11.011<sup></sup></td><td>11.258<sup></sup></td></tr>
-<tr><td style="text-align:left"></td><td>(-13.145 , 35.167)</td><td>(-3.785 , 26.301)</td></tr>
-<tr><td style="text-align:left">complaint</td><td>0.692<sup>***</sup></td><td>0.682<sup>***</sup></td></tr>
-<tr><td style="text-align:left"></td><td>(0.385 , 0.999)</td><td>(0.418 , 0.947)</td></tr>
-<tr><td style="text-align:left">critical</td><td>0.015<sup></sup></td><td></td></tr>
-<tr><td style="text-align:left"></td><td>(-0.288 , 0.319)</td><td></td></tr>
-<tr><td style="text-align:left">learning</td><td>0.249<sup></sup></td><td>0.238<sup>*</sup></td></tr>
-<tr><td style="text-align:left"></td><td>(-0.080 , 0.578)</td><td>(-0.049 , 0.525)</td></tr>
-<tr><td style="text-align:left">privilege</td><td>-0.104<sup></sup></td><td>-0.103<sup></sup></td></tr>
-<tr><td style="text-align:left"></td><td>(-0.382 , 0.175)</td><td>(-0.369 , 0.163)</td></tr>
-<tr><td style="text-align:left">raise</td><td>-0.033<sup></sup></td><td></td></tr>
-<tr><td style="text-align:left"></td><td>(-0.451 , 0.384)</td><td></td></tr>
-<td colspan="3" style="border-bottom: 1px solid black"></td></tr>
-<tr><td style="text-align: left">Observations</td><td>30</td><td>30</td></tr><tr><td style="text-align: left">R<sup>2</sup></td><td>0.715</td><td>0.715</td></tr><tr><td style="text-align: left">Adjusted R<sup>2</sup></td><td>0.656</td><td>0.682</td></tr><tr><td style="text-align: left">Residual Std. Error</td><td>7.139 (df=24)</td><td>6.863 (df=26)</td></tr><tr><td style="text-align: left">F Statistic</td><td>12.063<sup>***</sup> (df=5; 24)</td><td>21.743<sup>***</sup> (df=3; 26)</td></tr>
-<tr><td colspan="3" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align: left">This command is fun!</td><td colspan="2" style="text-align: right"><sup>*</sup>p&lt;0.1; <sup>**</sup>p&lt;0.05; <sup>***</sup>p&lt;0.01</td></tr><tr><td colspan="3" style="text-align: right">My name is michael</td></tr><tr><td colspan="3" style="text-align: right">I love pizza</td></tr></table>
-</div>
+<p> </p>
+<hr/>
+<p style="font-family:palatino; text-align: center;font-size: 15px">ECON320 Python Programming Laboratory</p>
+<p style="font-family:palatino; text-align: center;font-size: 15px">Professor <em> Paloma Lopez de mesa Moyano</em></p>
+<p style="font-family:palatino; text-align: center;font-size: 15px"><span style="color: #6666FF;"><em>paloma.moyano@emory.edu</em></span></p>
+<p style="font-family:palatino; text-align: center;font-size: 15px">Department of Economics</p>
+<p style="font-family:palatino; text-align: center; color: #012169;font-size: 15px">Emory University</p>
+<p> </p>
 </div>
 </div>
 </div>
